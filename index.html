@@ -94,18 +94,32 @@
                 });
             }
 
-
             console.log("test2 start");
 
             const start = performance.now();
             const lineProps = ['a'];
-            const colProps = ['b'];
+            const colProps = ['b', 'c'];
             const statProps = [
                 { prop: 'd', method: 'sum', showname: 'Sum of d' },
-                { prop: 'd', method: 'avg', showname: 'Average of d' },
-                { prop: 'd', method: 'count', showname: 'count of d' },
-                { prop: 'd', method: 'count2', showname: 'count2 of d' },
-                { prop: 'd', method: 'avg2', showname: 'avg2 of d' }
+                { prop: 'd', method: 'avg', showname: 'Avg of d', format: 4 },
+                { prop: 'd', method: 'count', showname: 'count of d', format: "0" },
+                { prop: 'd', method: 'count2', showname: 'count2 of d', format: v => v.toFixed(0) },
+                { prop: 'd', method: 'avg2', showname: 'avg2 of d', format: v => v.QWETYUIOP(2) },
+
+                {
+                    showname: '计算列1',
+                    format: v => v.toFixed(2),
+                    method: function (sts, datas) {
+                        return sts['Sum of d'] / sts['count of d']
+                    }
+                },
+                {
+                    showname: '计算列2',
+                    format: v => v.toLocaleString(2),
+                    method: function (sts, datas) {
+                        return sts['计算列1'] * 10000000
+                    }
+                }
             ];
 
 

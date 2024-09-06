@@ -159,7 +159,7 @@ function RenderCrossTable(crosstable, holderID, options) {
         if (grpNode.subs.length == 0) {
             for (var i = 0; i < crosstable.statisticProps.length; i++) {
                 var td = document.createElement('td');
-                td.innerText = grpNode.sts[crosstable.statisticProps[i]].toFixed(2);
+                td.innerText = grpNode.sts[crosstable.statisticProps[i]];
 
                 td.className = 'sts-cell';
                 tr.appendChild(td);
@@ -181,7 +181,7 @@ function RenderCrossTable(crosstable, holderID, options) {
 
             for (var i = 0; i < crosstable.statisticProps.length; i++) {
                 var td = document.createElement('td');
-                td.innerText = grpNode.sts[crosstable.statisticProps[i]].toFixed(2);
+                td.innerText = grpNode.sts[crosstable.statisticProps[i]];
                 td.className = 'sts-cell';
 
                 tr.appendChild(td);
@@ -230,12 +230,21 @@ function preSt(resultLevel, obj, statisticProps) {
 
 // 递归计算result中的统计值
 function calcResult(result, statisticProps) {
-    var st = {};
+    result.sts = {};
+    // 第一遍，计算基本统计值
     for (var i = 0; i < statisticProps.length; i++) {
+        if (typeof (statisticProps[i].method) === "function")
+            continue;
         var showname = statisticProps[i].showname;
-        st[showname] = calcDatas(result, result.reldatas, statisticProps[i]);
+        result.sts[showname] = calcDatas(result, result.reldatas, statisticProps[i]);
     }
-    result.sts = st;
+    // 第二遍，计算自定义统计值
+    for (var i = 0; i < statisticProps.length; i++) {
+        if (!typeof (statisticProps[i].method) === "function")
+            continue;
+        var showname = statisticProps[i].showname;
+        result.sts[showname] = calcDatas(result, result.reldatas, statisticProps[i]);
+    }
 
     for (var i = 0; i < result.subs.length; i++) {
         calcResult(result.subs[i], statisticProps);
@@ -247,21 +256,48 @@ function calcDatas(result, datas, stItem) {
     var showname = stItem.showname;
     var prests = result.prests[showname];
 
-    if (method === 'sum') {
-        return prests.sum;
-    } else if (method === 'count') {
-        return prests.count;
-    } else if (method === 'avg') {
-        return prests.sum / prests.count;
-    } else if (method === 'count2') {
-        return prests.countIfNotNull;
-    } else if (method === 'avg2') {
-        return prests.sum / prests.countIfNotNull;
+    var value = 0;
+
+
+    if (typeof (method) === 'function') {
+        value = method(result.sts, datas);
+    }
+    else if (method === 'sum') {
+        value = prests.sum;
+    }
+    else if (method === 'count') {
+        value = prests.count;
+    }
+    else if (method === 'avg') {
+        value = prests.sum / prests.count;
+    }
+    else if (method === 'count2') {
+        value = prests.countIfNotNull;
+    }
+    else if (method === 'avg2') {
+        value = prests.sum / prests.countIfNotNull;
     }
     // 其它计算逻辑，可能需要根据具体需求进行修改
     //...
+    else value = "not support " + method;
 
-    return "not support " + method;
+    // 格式化
+
+    try {
+        if (typeof (stItem.format) === 'function')
+            value = stItem.format(value);
+        else if (typeof (stItem.format) === 'number')
+            value = value.toFixed(stItem.format);
+        else if (typeof (stItem.format) === 'string')
+            value = value.toFixed(toNumberOrDefault(stItem.format, 0));
+        return value;
+    }
+    catch (err) {
+        return 'format error';
+
+    }
+
+    return value;
 }
 
 function toNumberOrDefault(obj, defaultvalue = 0) {
