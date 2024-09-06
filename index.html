@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="crosstable.js"></script>
+
+    <style>
+        .cross-table {
+            border-collapse: collapse;
+            border: 1px solid black;
+        }
+
+        .cross-table th {
+            border: 1px solid black;
+            background-color: #0033ff;
+            color: white
+        }
+
+        .cross-table td {
+            border: 1px solid black;
+            padding: 5px;
+        }
+
+        .cross-table .total-row {
+            font-weight: bold;
+        }
+
+        .cross-table .grp-cell {
+            text-align: center;
+            color: rgb(0, 0, 0);
+        }
+
+        .cross-table .sts-cell {
+            text-align: right;
+            color: rgb(0, 0, 136);
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Cross Table</h1>
+    <div id="divCrossTable">
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('DOM已经加载完成');
+            //test1();
+            test2();
+        });
+
+        function test1() {
+            var data1 = [
+                { a: "a1", b: "b1", c: "c1", d: 1 },
+                { a: "a1", b: "b1", c: "c1", d: 2 },
+                { a: "a1", b: "b2", c: "c1", d: 3 },
+                { a: "a2", b: "b2", c: "c2", d: 4 },
+                { a: "a2", b: "b1", c: "c2", d: 5 },
+                { a: "a2", b: "b2", c: "c2", d: 6 },
+                { a: "a1", b: "b2", c: "c1", d: "a" },
+                { a: "a1", b: "b2", c: "c1", d: undefined },
+                { a: "a1", b: "b2", c: "c1", d: null },
+                { a: "a2", b: "b2", c: "c2" },
+
+            ];
+
+            const lineProps = ['a', 'b'];
+            const colProps = ['c'];
+            const statProps = [
+                { prop: 'd', method: 'sum', showname: 'Sum of d' },
+                { prop: 'd', method: 'avg', showname: 'Average of d' },
+                { prop: 'd', method: 'count', showname: 'count of d' },
+                { prop: 'd', method: 'count2', showname: 'count2 of d' },
+                { prop: 'd', method: 'avg2', showname: 'avg2 of d' }
+            ];
+
+            var result = CrossTable(data1, lineProps, colProps, statProps)
+            console.log(result);
+            printResult(result);
+        }
+
+        function test2() {
+            var data2 = [];
+
+            for (let i = 0; i < 100000; i++) {
+                data2.push({
+                    a: "A" + (Math.random() * 2).toFixed(0),
+                    b: "B" + (Math.random() * 2).toFixed(0),
+                    c: "C" + (Math.random() * 3).toFixed(0),
+                    d: Math.random() * 10
+                });
+            }
+
+
+            console.log("test2 start");
+
+            const start = performance.now();
+            const lineProps = ['a'];
+            const colProps = ['b'];
+            const statProps = [
+                { prop: 'd', method: 'sum', showname: 'Sum of d' },
+                { prop: 'd', method: 'avg', showname: 'Average of d' },
+                { prop: 'd', method: 'count', showname: 'count of d' },
+                { prop: 'd', method: 'count2', showname: 'count2 of d' },
+                { prop: 'd', method: 'avg2', showname: 'avg2 of d' }
+            ];
+
+
+            var result = CrossTable(data2, lineProps, colProps, statProps,
+                { keepDetail: true })
+
+            // 记录结束时间
+            const end = performance.now();
+
+            // 计算并输出运行时间
+            const elapsed = end - start;
+
+            console.log(`代码运行时间: ${elapsed} 毫秒`);
+            console.log(result);
+            printResult(result);
+
+            RenderCrossTable(result, "divCrossTable",
+                {
+                    className: 'cross-table',
+
+                    hideSum: false,
+                    orderBy: [
+                        { prop: 'a', sortDirection: '' },
+                        { prop: 'b', sortDirection: 'desc' }]
+                });
+        }
+    </script>
+</body>
+
+</html>
