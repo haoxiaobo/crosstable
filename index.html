@@ -138,12 +138,27 @@
 
             RenderCrossTable(result, "divCrossTable",
                 {
-                    className: 'cross-table',
+                    className: 'cross-table', // 表格样式
 
-                    hideSum: false,
+                    hideSum: true, // 是否隐藏全部小计
+                    showSumProps: ['', 'a', 'c'], // 强制显示小计的组
+                    // 排序方式
                     orderBy: [
+                        { prop: 'Sum of d' },
                         { prop: 'a', sortDirection: '' },
-                        { prop: 'b', sortDirection: 'desc' }]
+                        { prop: 'b', sortDirection: 'desc' },
+                    ],
+
+                    extCols: [{
+                        header: '详情',
+                        htmlContent: function (grpNode) {
+                            return "<a href=detail?" +
+                                grpNode.linkPath.map(
+                                    item => item.k + "=" + item.v).join("&")
+                                + ">链接" + "</a>";
+                        }
+                    }
+                    ],
                 });
         }
     </script>

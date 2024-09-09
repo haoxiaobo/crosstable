@@ -14,10 +14,16 @@ function CrossTable(objs, lineGrpProps, colGrpProps, statisticProps, options) {
     if (!colGrpProps) colGrpProps = [];
     if (!statisticProps) statisticProps = [];
 
-    var result = { k: '', v: '', indexmap: {}, reldatas: [], subs: [], sts: [] };
+    // 顶层node
+    var result = {
+        k: '', v: '', indexmap: {},
+        reldatas: [], subs: [],
+        sts: [],
+        linkPath: [],
+        parent: null
+    };
 
     var allGrpProps = lineGrpProps.concat(colGrpProps);
-
 
     for (var i = 0; i < objs.length; i++) {
         var obj = objs[i];
@@ -36,7 +42,9 @@ function CrossTable(objs, lineGrpProps, colGrpProps, statisticProps, options) {
                     indexmap: {},
                     reldatas: [],
                     subs: [],
-                    sts: []
+                    sts: [],
+                    linkPath: [...curResultLevel.linkPath, { k: k, v: v }],
+                    parent: curResultLevel
                 };
                 curResultLevel.indexmap[v] = grpnode;
                 curResultLevel.subs.push(grpnode);
@@ -86,6 +94,13 @@ function RenderCrossTable(crosstable, holderID, options) {
         var th = document.createElement('th');
         th.innerText = crosstable.statisticProps[i];
         tr.appendChild(th);
+    }
+    if (options.extCols) {
+        for (var i = 0; i < options.extCols.length; i++) {
+            var th = document.createElement('th');
+            th.innerText = options.extCols[i].header;
+            tr.appendChild(th)
+        }
     }
 
     tr = document.createElement('tr');
@@ -164,17 +179,25 @@ function RenderCrossTable(crosstable, holderID, options) {
                 td.className = 'sts-cell';
                 tr.appendChild(td);
             }
+            if (options.extCols) {
+                for (var i = 0; i < options.extCols.length; i++) {
+                    var td = document.createElement('td');
+                    td.innerHTML = options.extCols[i].htmlContent(grpNode);
+                    tr.appendChild(td)
+                }
+            }
             maxGrpCount++;
         }
 
         // 小计
-        if (grpNode.subs.length != 0 && !options.hideSum) {
+        if (grpNode.subs.length != 0 && !options.hideSum
+            || (grpNode.subs.length != 0 && options.showSumProps && options.showSumProps.includes(grpNode.k))) {
             // 小计前先填充空格
             tr = document.createElement('tr');
             tab.appendChild(tr);
             tr.className = 'total-row';
             var etd = document.createElement('td');
-            etd.innerText = '小计';
+            etd.innerText = grpNode.k == '' ? '总计' : '小计';
             etd.className = 'grp-cell';
 
             tr.appendChild(etd);
@@ -186,7 +209,13 @@ function RenderCrossTable(crosstable, holderID, options) {
 
                 tr.appendChild(td);
             }
-
+            if (options.extCols) {
+                for (var i = 0; i < options.extCols.length; i++) {
+                    var td = document.createElement('td');
+                    td.innerHTML = options.extCols[i].htmlContent(grpNode);
+                    tr.appendChild(td)
+                }
+            }
             etd.colSpan = maxLevel;
             maxGrpCount++;
         }
