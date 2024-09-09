@@ -1,10 +1,26 @@
 /**
- * 交叉表
- * @param {[any]} objs 数据源
- * @param {[string]} lineGrpProps 行分组属性
- * @param {[string]]} colGrpProps 列分组属性
- * @param {[{prop:string, method:'sum|count|avg'}]} statisticProps 统计属性
- * @returns { k: string, v: any, indexmap: object, reldatas: [object], sts:[{}], subs: [], }
+ * 生成一个交叉表对象，用于对数据进行分组和统计
+ * @param {Array} objs - 包含数据对象的数组
+ * @param {Array} lineGrpProps - 定义行分组的属性数组
+ * @param {Array} colGrpProps - 定义列分组的属性数组
+ * @param {staticItem[]} statisticProps - 定义统计字段的属性数组
+ * @param {String} staticItem.prop - 要统计的属性名
+ * @param {String} staticItem.showname - 要显示的属性名
+ * @param {string|function} staticItem.method - 统计方法，可选值为'sum', 'count', 'avg', 'count2', 'avg2', function(){}
+ * @param {Object} options - 其他可选参数
+ * @param {Boolean} options.keepDetail - 是否保留详细数据，默认为 true
+ * @returns {Object} 包含所有分组信息和统计信息的交叉表对象
+ * @property {String} k - 键，用于标识分组键
+ * @property {String} v - 值，用于标识分组值
+ * @property {Object} indexmap - 存储当前级别的子分组信息
+ * @property {Array} reldatas - 存储当前分组下的相关数据对象
+ * @property {Array} subs - 存储子分组信息
+ * @property {Array} sts - 存储统计信息
+ * @property {Array} linkPath - 存储当前分组的路径信息，用于回溯
+ * @property {Object} parent - 存储父分组对象的引用
+ * @property {Array} lineGrpProps - 存储行分组的属性名
+ * @property {Array} colGrpProps - 存储列分组的属性名
+ * @property {Array} statisticProps - 存储统计字段的显示名
  */
 
 function CrossTable(objs, lineGrpProps, colGrpProps, statisticProps, options) {
@@ -70,6 +86,18 @@ function CrossTable(objs, lineGrpProps, colGrpProps, statisticProps, options) {
     return result;
 }
 
+/**
+ * 渲染交叉表
+ *
+ * @param {object} crosstable - 要渲染的交叉表对象
+ * @param {string} holderID - 要附加表格的容器元素的 ID
+ * @param {object} options - 渲染选项
+ * @param {string} [options.className] - 表格的 CSS 类名
+ * @param {string[]} [options.orderBy] - 定义排序顺序的属性数组
+ * @param {boolean} [options.hideSum] - 是否隐藏小计行
+ * @param {string[]} [options.showSumProps] - 指定要显示小计的属性
+ * @param {object[]} [options.extCols] - 额外的列定义
+ */
 function RenderCrossTable(crosstable, holderID, options) {
     var divHolder = document.getElementById(holderID);
     if (!divHolder)
@@ -109,13 +137,19 @@ function RenderCrossTable(crosstable, holderID, options) {
     RenderCrossLineGrpNode(crosstable, tab, tr, 0, options);
 
     /**
-     * 
-     * @param {*} grpNode 
-     * @param {*} tab 
-     * @param {*} options 
-     * @returns 
+     * 渲染一个交叉表中的行组
+     *
+     * @param {object} grpNode - 要渲染的行组对象
+     * @param {HTMLTableElement} tab - 要附加新行的表格对象
+     * @param {HTMLTableRowElement} tr - 当前行对象，通常为新创建的行
+     * @param {number} level - 当前组的级别，用于计算 rowspan
+     * @param {object} options - 可选参数
+     * @param {string[]} [options.orderBy] - 定义排序顺序的属性数组
+     * @param {boolean} [options.hideSum] - 是否隐藏小计行
+     * @param {string[]} [options.showSumProps] - 指定要显示小计的属性
+     * @param {object[]} [options.extCols] - 额外的列定义
+     * @returns {object} 包含 maxLevel 和 maxGrpCount 属性的对象
      */
-
     function RenderCrossLineGrpNode(grpNode, tab, tr, level, options) {
         // 计算本级grp的maxLevel和maxGrpCount(包括本级)
         var maxLevel = 0;
@@ -231,6 +265,14 @@ function RenderCrossTable(crosstable, holderID, options) {
 }
 
 // 预统计以加快后续统计
+/**
+ * 预处理统计数据
+ *
+ * @param {number} resultLevel - 要更新的结果层级对象
+ * @param {Object} obj - 包含统计数据的对象
+ * @param {statisticItem[]} statisticProps - 统计属性数组
+ * @returns {void}
+*/
 function preSt(resultLevel, obj, statisticProps) {
     if (!resultLevel.hasOwnProperty("prests"))
         resultLevel.prests = {};
