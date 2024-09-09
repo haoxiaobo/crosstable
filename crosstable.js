@@ -231,7 +231,7 @@ function RenderCrossTable(crosstable, holderID, options) {
             tab.appendChild(tr);
             tr.className = 'total-row';
             var etd = document.createElement('td');
-            etd.innerText = grpNode.k == '' ? '总计' : '小计';
+            etd.innerText = grpNode.k == '' ? '总计' : (grpNode.v + ' 小计');
             etd.className = 'grp-cell';
 
             tr.appendChild(etd);

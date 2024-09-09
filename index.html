@@ -49,7 +49,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             console.log('DOM已经加载完成');
             //test1();
-            test2();
+            test3();
         });
 
         function test1() {
@@ -90,21 +90,22 @@
                     a: "A" + (Math.random() * 2).toFixed(0),
                     b: "B" + (Math.random() * 2).toFixed(0),
                     c: "C" + (Math.random() * 3).toFixed(0),
-                    d: Math.random() * 10
+
+                    z: Math.random() * 10
                 });
             }
 
             console.log("test2 start");
 
             const start = performance.now();
-            const lineProps = ['a'];
-            const colProps = ['b', 'c'];
+            const lineProps = ['a', 'b'];
+            const colProps = ['c'];
             const statProps = [
-                { prop: 'd', method: 'sum', showname: 'Sum of d' },
-                { prop: 'd', method: 'avg', showname: 'Avg of d', format: 4 },
-                { prop: 'd', method: 'count', showname: 'count of d', format: "0" },
-                { prop: 'd', method: 'count2', showname: 'count2 of d', format: v => v.toFixed(0) },
-                { prop: 'd', method: 'avg2', showname: 'avg2 of d', format: v => v.QWETYUIOP(2) },
+                { prop: 'z', method: 'sum', showname: 'Sum of d' },
+                { prop: 'z', method: 'avg', showname: 'Avg of d', format: 4 },
+                { prop: 'z', method: 'count', showname: 'count of d', format: "0" },
+                { prop: 'z', method: 'count2', showname: 'count2 of d', format: v => v.toFixed(0) },
+                { prop: 'z', method: 'avg2', showname: 'avg2 of d', format: v => v.QWETYUIOP(2) },
 
                 {
                     showname: '计算列1',
@@ -161,6 +162,91 @@
                     ],
                 });
         }
+
+        function test3() {
+            var data = [];
+
+            for (let i = 0; i < 15; i++) {
+                data.push({
+                    a: "A" + (Math.random() * 1).toFixed(0),
+                    b: "B" + (Math.random() * 2).toFixed(0),
+                    c: "C" + (Math.random() * 1).toFixed(0),
+                    d: "D" + (Math.random() * 2).toFixed(0),
+                    z: Math.random() * 10
+                });
+            }
+
+            console.log("test2 start");
+
+            const start = performance.now();
+            const lineProps = ['a', 'b'];
+            const colProps = ['c', 'd'];
+            const statProps = [
+                { prop: 'z', method: 'sum', showname: 'Sum of d', format: 2 },
+                //{ prop: 'z', method: 'avg', showname: 'Avg of d', format: 4 },
+                { prop: 'z', method: 'count', showname: 'count of d', format: "0" },
+                //{ prop: 'z', method: 'count2', showname: 'count2 of d', format: v => v.toFixed(0) },
+                //{ prop: 'z', method: 'avg2', showname: 'avg2 of d', format: v => v.QWETYUIOP(2) },
+
+                {
+                    showname: '计算列1',
+                    format: v => v.toFixed(2),
+                    method: function (sts, datas) {
+                        return sts['Sum of d'] / sts['count of d']
+                    }
+                },
+                {
+                    showname: '计算列2',
+                    format: v => v.toLocaleString(2),
+                    method: function (sts, datas) {
+                        return sts['计算列1'] * 10000000
+                    }
+                }
+            ];
+
+
+            var result = CrossTable(data, lineProps, colProps, statProps,
+                { keepDetail: true })
+
+            // 记录结束时间
+            const end = performance.now();
+
+            // 计算并输出运行时间
+            const elapsed = end - start;
+
+            console.log(`代码运行时间: ${elapsed} 毫秒`);
+            console.log(result);
+            printResult(result);
+
+            RenderCrossTable(result, "divCrossTable",
+                {
+                    className: 'cross-table', // 表格样式
+
+                    hideSum: true, // 是否隐藏全部小计
+                    showSumProps: ['', 'a', 'c'], // 强制显示小计的组
+                    // 排序方式
+                    orderBy: [
+                        { prop: 'a' },
+                        { prop: 'b' },
+                        { prop: 'c' },
+                        { prop: 'd' },
+
+
+                    ],
+
+                    extCols: [{
+                        header: '详情',
+                        htmlContent: function (grpNode) {
+                            return "<a href=detail?" +
+                                grpNode.linkPath.map(
+                                    item => item.k + "=" + item.v).join("&")
+                                + ">链接" + "</a>";
+                        }
+                    }
+                    ],
+                });
+        }
+
     </script>
 </body>
 
